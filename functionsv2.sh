@@ -15,26 +15,28 @@ local secret="$5"
 
 # /etc/fastd/fff.bat"$bat"
 
-mkdir /etc/fastd/fff.bat"$bat"
+local basepath="/etc/fastd/fff.bat${bat}"
+
+mkdir "$basepath"
 echo "#!/bin/bash
-/sbin/ifdown \$INTERFACE" > /etc/fastd/fff.bat"$bat"/down.sh
+/sbin/ifdown \$INTERFACE" > "$basepath/down.sh"
 # x setzen
-chmod a+x /etc/fastd/fff.bat"$bat"/down.sh
-echo "/etc/fastd/fff.bat"$bat" angelegt"
+chmod a+x "$basepath/down.sh"
+echo "$basepath angelegt"
 
 echo "#!/bin/bash
 /sbin/ifup \$INTERFACE
 batctl -m bat$bat gw_mode server 256000
-ip6tables -t nat -A PREROUTING -i bat$bat -p tcp -d fe80::1 --dport 2342 -j REDIRECT --to-port $httpport" > /etc/fastd/fff.bat"$bat"/up.sh
+ip6tables -t nat -A PREROUTING -i bat$bat -p tcp -d fe80::1 --dport 2342 -j REDIRECT --to-port $httpport" > "$basepath/up.sh"
 # x setzen
-chmod a+x /etc/fastd/fff.bat"$bat"/up.sh
-echo "/etc/fastd/fff.bat"$bat"/up.sh angelegt"
+chmod a+x "$basepath/up.sh"
+echo "$basepath/up.sh angelegt"
 
 echo "#!/bin/bash
-return 0" > /etc/fastd/fff.bat"$bat"/verify.sh
+return 0" > "$basepath/verify.sh"
 # x setzen
-chmod a+x /etc/fastd/fff.bat"$bat"/verify.sh
-echo "/etc/fastd/fff.bat"$bat"/verify.sh angelegt"
+chmod a+x "$basepath/verify.sh"
+echo "$basepath/verify.sh angelegt"
 
 echo "# Log warnings and errors to stderr
 log level error;
@@ -53,12 +55,12 @@ secret \"$secret\";
 # Set the interface MTU for TAP mode with xsalsa20/aes128 over IPv4 with a base MTU of 1492 (PPPoE)
 # (see MTU selection documentation)
 mtu 1426;
-on up \"/etc/fastd/fff.bat$bat/up.sh\";
-on down \"/etc/fastd/fff.bat$bat/down.sh\";
+on up \"$basepath/up.sh\";
+on down \"$basepath/down.sh\";
 secure handshakes no;
 on verify \"true\";
-" > /etc/fastd/fff.bat"$bat"/fff.bat"$bat".conf
-echo "/etc/fastd/fff.bat"$bat"/fff.bat"$bat".conf angelegt"
+" > "$basepath/fff.bat${bat}.conf"
+echo "$basepath/fff.bat${bat}.conf angelegt"
 
 return 0
 
@@ -78,7 +80,7 @@ local fe80="$4"
 local ipv4net="$5"
 local ipv6net="$6"
 
-#/etc/network/interfaces.d/bat"$bat"
+local configfile="/etc/network/interfaces.d/bat${bat}.cfg"
 
 echo "#device: bat$bat
 iface bat$bat inet manual
@@ -110,8 +112,8 @@ iface $fastdinterfacename inet manual
     post-up ifup bat$bat
     post-down ifdown bat$bat
     post-down ip link set dev \$IFACE down
-" > "/etc/network/interfaces.d/bat$bat.cfg"
-echo "/etc/network/interfaces.d/bat$bat.cfg angelegt"
+" > "$configfile"
+echo "$configfile angelegt"
 
 return 0
 
@@ -126,7 +128,7 @@ fi
 
 local bat="$1"
 
-#/etc/systemd/system/fastdbat"$bat".service
+local configfile="/etc/systemd/system/fastdbat${bat}.service"
 
 echo "[Unit]
 Description=fastd
@@ -137,8 +139,8 @@ Type=simple
 
 [Install]
 WantedBy=multi-user.target
-" > /etc/systemd/system/fastdbat"$bat".service
-echo "/etc/systemd/system/fastdbat"$bat".service angelegt"
+" > "$configfile"
+echo "$configfile angelegt"
 
 return 0
 
@@ -154,27 +156,28 @@ fi
 local bat="$1"
 local httpport="$2"
 
-#/etc/apache2/sites-available/bat"$bat".conf
+local configfile="/etc/apache2/sites-available/bat${bat}.conf"
+local wwwfolder="/var/www/bat$bat"
 
 echo "<VirtualHost *:$httpport>
         ServerAdmin webmaster@localhost
         DocumentRoot /var/www/bat$bat
         ErrorLog \${APACHE_LOG_DIR}/error.log
         CustomLog \${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>" > /etc/apache2/sites-available/bat"$bat".conf
-echo "/etc/apache2/sites-available/bat"$bat".conf angelegt"
+</VirtualHost>" > "$configfile"
+echo "$configfile angelegt"
 
 #Ordner für Apache Home anlegen
-mkdir /var/www/bat$bat
-echo "/var/www/bat$bat angelegt"
+mkdir "$wwwfolder"
+echo "$wwwfolder angelegt"
 
 #/etc/apache2/ports.conf
 
 sed -i '4i Listen '$httpport'' /etc/apache2/ports.conf
 echo "Port in /etc/apache2/ports.conf erweitert"
 
-echo "$(hostname)" > "/var/www/bat$bat/gateway"
-echo "/var/www/bat$bat/gateway angelegt"
+echo "$(hostname)" > "$wwwfolder/gateway"
+echo "$wwwfolder/gateway angelegt"
 
 return 0
 
@@ -191,11 +194,11 @@ local bat="$1"
 local lat="$2"
 local lon="$3"
 
-#Cronjob für Hoodfile anlegen:
+local cronfile="/etc/cron.d/bat${bat}"
 
 echo "*/5 * * * * root wget \"http://keyserver.freifunk-franken.de/v2/index.php?lat=$lat&long=$lon\" -O /var/www/bat$bat/keyxchangev2data
-" > /etc/cron.d/bat"$bat"
-echo "Cronjob in /etc/cron.d/bat"$bat" angelegt"
+" > "$cronfile"
+echo "Cronjob in $cronfile angelegt"
 
 return 0
 
@@ -213,7 +216,7 @@ local dhcpstart="$2"
 local dhcpend="$3"
 local ipv4mask="$4"
 
-#/etc/systemd/system/dnsmasqbat"$bat".service
+local configfile="/etc/systemd/system/dnsmasqbat${bat}.service"
 
 echo "[Unit]
 Requires=network.target
@@ -228,8 +231,8 @@ ExecStart=/usr/sbin/dnsmasq -k --conf-dir=/etc/dnsmasq.d,*.conf --interface bat$
 
 [Install]
 WantedBy=multi-user.target
-" > /etc/systemd/system/dnsmasqbat"$bat".service
-echo "/etc/systemd/system/dnsmasqbat"$bat".service angelegt"
+" > "$configfile"
+echo "$configfile angelegt"
 
 return 0
 
@@ -246,7 +249,7 @@ local bat="$1"
 local fe80="$2"
 local ipv6net="$3"
 
-#/etc/radvd.conf
+local configfile="/etc/radvd.conf"
 
 echo "interface bat$bat {
         AdvSendAdvert on;
@@ -262,8 +265,8 @@ echo "interface bat$bat {
         };
         route fc00::/7 {
         };
-};" >> /etc/radvd.conf
-echo "/etc/radvd.conf erweitert"
+};" >> "$configfile"
+echo "$configfile erweitert"
 
 return 0
 
@@ -278,7 +281,7 @@ fi
 
 local bat="$1"
 
-#/etc/systemd/system/alfredbat"$bat".service
+local configfile="/etc/systemd/system/alfredbat${bat}.service"
 
 echo "[Unit]
 Description=alfred
@@ -291,8 +294,8 @@ ExecStartPre=/bin/sleep 20
 
 [Install]
 WantedBy=multi-user.target
-WantedBy=fastdbat$bat.service" >> /etc/systemd/system/alfredbat"$bat".service
-echo "/etc/systemd/system/alfredbat"$bat".service angelegt"
+WantedBy=fastdbat$bat.service" >> "$configfile"
+echo "$configfile angelegt"
 
 return 0
 
@@ -311,30 +314,32 @@ local numaddr="$3"
 
 #/etc/mrtg/dhcp.cfg
 
+local cfgdhcp="/etc/mrtg/dhcpbat${bat}.sh"
 echo "#!/bin/bash
 leasecount=\$(cat /var/lib/misc/bat0.leases | wc -l)
 echo \"\$leasecount\"
 echo \"\$leasecount\"
 echo 0
-echo 0" > /etc/mrtg/dhcpbat"$bat".sh
-chmod +x /etc/mrtg/dhcpbat"$bat".sh
-echo "/etc/mrtg/dhcpbat"$bat".sh angelegt und ausführbar gemacht"
+echo 0" > "$cfgdhcp"
+chmod +x "$cfgdhcp"
+echo "$cfgdhcp angelegt und ausführbar gemacht"
 
+local cfggwl="/etc/mrtg/gwlbat${bat}.sh"
 echo "#!/bin/bash
 gwlcount=\$(/usr/sbin/batctl -m bat$bat gwl -H | wc -l)
 echo \"\$gwlcount\"
 echo \"\$gwlcount\"
 echo 0
-echo 0" > /etc/mrtg/gwlbat"$bat".sh
-chmod +x /etc/mrtg/gwlbat"$bat".sh
-echo "/etc/mrtg/gwlbat"$bat".sh angelegt und ausführbar gemacht"
+echo 0" > "$cfggwl"
+chmod +x "$cfggwl"
+echo "$cfggwl angelegt und ausführbar gemacht"
 
 echo "
 WorkDir: /var/www/mrtg
 Title[dhcpleasecount$bat]: DHCP-Leases
 PageTop[dhcpleasecount$bat]: <H1>DHCP-Leases bat$bat $hoodname</H1>
 Options[dhcpleasecount$bat]: gauge,nopercent,growright,noinfo
-Target[dhcpleasecount$bat]: \`/etc/mrtg/dhcpbat$bat.sh\`
+Target[dhcpleasecount$bat]: \`$cfgdhcp\`
 MaxBytes[dhcpleasecount$bat]: $numaddr
 YLegend[dhcpleasecount$bat]: DHCP Count
 ShortLegend[dhcpleasecount$bat]: x
@@ -346,7 +351,7 @@ WorkDir: /var/www/mrtg
 Title[gwlleasecount$bat]: Gatewayanzahl
 PageTop[gwlleasecount$bat]: <H1>Gatewayanzahl bat$bat $hoodname</H1>
 Options[gwlleasecount$bat]: gauge,nopercent,growright,noinfo
-Target[gwlleasecount$bat]: \`/etc/mrtg/gwlbat$bat.sh\`
+Target[gwlleasecount$bat]: \`$cfggwl\`
 MaxBytes[gwlleasecount$bat]: 3
 YLegend[gwlleasecount$bat]: Gateway Count
 ShortLegend[gwlleasecount$bat]: x
