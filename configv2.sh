@@ -77,8 +77,6 @@ systemctl enable "dnsmasq-$iflabel.service"
 systemctl start "dnsmasq-$iflabel.service"
 echo "dnsmasq enabled und gestartet"
 
-echo "<html><header></header><body><img src="https://i.pinimg.com/originals/c8/af/e6/c8afe6457997851b504458a30b6d223d.jpg"></img></body></html>" > /var/www/html/index.html
-
 # Radvd config - /etc/radvd.conf
 setupRadvd "$batif" "$fe80" "$ipv6net"
 
