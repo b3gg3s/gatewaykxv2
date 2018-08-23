@@ -26,7 +26,7 @@ echo "Wir nutzen $fastdport Port für fastd"
 
 
 bat=$batbase
-while grep bat$bat /etc/systemd/system/fastdbat*.service &>/dev/null ; do ((bat+=1)); done
+while grep bat$bat /etc/systemd/system/fastd*bat*.service &>/dev/null ; do ((bat+=1)); done
 echo "Wir nutzen $bat Nummer für Batman Interface"
 ## $bat = bat interface
 
@@ -39,53 +39,56 @@ echo "Wir nutzen $httpport Port für http Server"
 
 #### Configuration ####
 
+batif="bat$bat"
+iflabel="fff.$batif"
+
 # Fastd config - /etc/fastd/fff.bat"$bat"
 fastdsecret="90e9418a189e18f6a126a554081b445690a63752baa763ac26339c8742308144"
-setupFastdConfig "$bat" "$fastdinterfacename" "$fastdport" "$httpport" "$fastdsecret"
+setupFastdConfig "$iflabel" "$batif" "$fastdinterfacename" "$fastdport" "$httpport" "$fastdsecret"
 
 # Network interfaces - /etc/network/interfaces.d/bat"$bat"
-setupInterface "$bat" "$ipv4" "$ipv6" "$fe80" "$ipv4net" "$ipv6net"
+setupInterface "$iflabel" "$batif" "$fastdinterfacename" "$Hoodname" "$ipv4" "$ipv6" "$fe80" "$ipv4net" "$ipv6net"
 
 # Fastd service - /etc/systemd/system/fastdbat"$bat".service
-setupFastdService "$bat"
+setupFastdService "$iflabel"
 
-systemctl enable fastdbat"$bat"
-systemctl start fastdbat"$bat"
+systemctl enable "fastd-$iflabel"
+systemctl start "fastd-$iflabel"
 echo "fastd Service gestartet und enabled"
 
 # Apache config - /etc/apache2/sites-available/bat"$bat".conf
-setupApache "$bat" "$httpport"
+setupApache "$iflabel" "$httpport"
 
-a2ensite /etc/apache2/sites-available/bat"$bat".conf
+a2ensite "$iflabel"
 systemctl reload apache2
 echo "Config für Apache neu geladen und Apache neu gestartet"
 
 # Cronjob für Hoodfile anlegen
-setupCronHoodfile "$bat" "$lat" "$lon"
+setupCronHoodfile "$iflabel" "$lat" "$lon"
 
 # Dnsmasq service - /etc/systemd/system/dnsmasqbat"$bat".service
-setupDnsmasq "$bat" "$dhcpstart" "$dhcpende" "$ipv4netmask"
+setupDnsmasq "$iflabel" "$batif" "$dhcpstart" "$dhcpende" "$ipv4netmask"
 
-systemctl start dnsmasqbat"$bat".service
-systemctl enable dnsmasqbat"$bat".service
-echo "dnsamsq enabled und gestartet"
+systemctl enable "dnsmasq-$iflabel.service"
+systemctl start "dnsmasq-$iflabel.service"
+echo "dnsmasq enabled und gestartet"
 
 echo "<html><header></header><body><img src="https://i.pinimg.com/originals/c8/af/e6/c8afe6457997851b504458a30b6d223d.jpg"></img></body></html>" > /var/www/html/index.html
 
 # Radvd config - /etc/radvd.conf
-setupRadvd "$bat" "$fe80" "$ipv6net"
+setupRadvd "$batif" "$fe80" "$ipv6net"
 
 /etc/init.d/radvd restart
 echo "radvd neu gestartet"
 
 # Alfred service - /etc/systemd/system/alfredbat"$bat".service
-setupAlfred "$bat"
+setupAlfred "$iflabel" "$batif"
 
-systemctl enable alfredbat"$bat"
-systemctl start alfredbat"$bat"
+systemctl enable "alfred-$iflabel"
+systemctl start "alfred-$iflabel"
 echo "Alfred Service gestartet und enabled"
 
 # MRTG Config neu machen - /etc/mrtg/dhcp.cfg
-setupMrtg "$bat" "$mengeaddr"
+setupMrtg "$iflabel" "$batif" "$Hoodname" "$mengeaddr"
 
 echo "Script fertig"
