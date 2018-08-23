@@ -19,22 +19,26 @@ fi
 fe80=$(ip -6 addr show $ethernetinterface | grep "inet6 fe80" | grep -v "inet6 fe80::1" | tail -n 1 | cut -d " " -f6)
 echo "Wir nutzen folgende fe80 IPv6: $fe80"
 
-fastdport=$fastdportbase
-while grep $fastdport /etc/fastd/fff.bat*/fff.bat*.conf* &>/dev/null ; do ((fastdport+=1)); done
-echo "Wir nutzen $fastdport Port für fastd"
-## $fastdport = port für fastdport
+if [ -z "$fastdport" ]; then
+    fastdport=$fastdportbase
+    while grep $fastdport /etc/fastd/fff.bat*/fff.bat*.conf* &>/dev/null ; do ((fastdport+=1)); done
+    echo "Wir nutzen $fastdport Port für fastd"
+    ## $fastdport = port für fastdport
+fi
 
+if [ -z "$bat" ]; then
+    bat=$batbase
+    while grep bat$bat /etc/systemd/system/fastd*bat*.service &>/dev/null ; do ((bat+=1)); done
+    echo "Wir nutzen $bat Nummer für Batman Interface"
+    ## $bat = bat interface
+fi
 
-bat=$batbase
-while grep bat$bat /etc/systemd/system/fastd*bat*.service &>/dev/null ; do ((bat+=1)); done
-echo "Wir nutzen $bat Nummer für Batman Interface"
-## $bat = bat interface
-
-
-httpport=$httpportbase
-while grep $httpport /etc/apache2/sites-available/* &>/dev/null ; do ((httpport+=1)); done
-echo "Wir nutzen $httpport Port für http Server"
-## $httpport = port für httpserver
+if [ -z "$httpport" ]; then
+    httpport=$httpportbase
+    while grep $httpport /etc/apache2/sites-available/* &>/dev/null ; do ((httpport+=1)); done
+    echo "Wir nutzen $httpport Port für http Server"
+    ## $httpport = port für httpserver
+fi
 
 
 #### Configuration ####
