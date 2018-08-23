@@ -40,7 +40,7 @@ echo "$basepath/verify.sh angelegt"
 echo "# Log warnings and errors to stderr
 log level error;
 # Log everything to a log file
-log to syslog as \"fff$bat\" level info;
+log to syslog as \"$fastdifname\" level info;
 # Set the interface name
 interface \"$fastdifname\";
 # Support xsalsa20 and aes128 encryption methods, prefer xsalsa20
