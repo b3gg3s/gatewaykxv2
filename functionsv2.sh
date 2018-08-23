@@ -39,24 +39,31 @@ echo "$basepath/verify.sh angelegt"
 
 echo "# Log warnings and errors to stderr
 log level error;
+
 # Log everything to a log file
 log to syslog as \"$fastdifname\" level info;
+
 # Set the interface name
 interface \"$fastdifname\";
-# Support xsalsa20 and aes128 encryption methods, prefer xsalsa20
-#method \"xsalsa20-poly1305\";
-#method \"aes128-gcm\";
+
+# Disable encryption
 method \"null\";
+
 # Bind to a fixed port, IPv4 only
 bind any:$fastdport;
+
 # fastd need a key but we don't use them
 secret \"$secret\";
+
 # Set the interface MTU for TAP mode with xsalsa20/aes128 over IPv4 with a base MTU of 1492 (PPPoE)
 # (see MTU selection documentation)
 mtu 1426;
+
 on up \"$basepath/up.sh\";
 on down \"$basepath/down.sh\";
+
 secure handshakes no;
+
 on verify \"true\";
 " > "$basepath/$iflabel.conf"
 echo "$basepath/$iflabel.conf angelegt"
