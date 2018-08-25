@@ -44,7 +44,7 @@ fi
 #### Configuration ####
 
 batif="bat$bat"
-iflabel="fff.$batif"
+[ -z "$iflabel" ] && iflabel="fff.$batif"
 
 # Fastd config - /etc/fastd/fff.bat"$bat"
 fastdsecret="90e9418a189e18f6a126a554081b445690a63752baa763ac26339c8742308144"
