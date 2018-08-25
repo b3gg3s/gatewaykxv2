@@ -47,7 +47,7 @@ batif="bat$bat"
 [ -z "$iflabel" ] && iflabel="fff.$batif"
 
 # Fastd config - /etc/fastd/fff.bat"$bat"
-fastdsecret="90e9418a189e18f6a126a554081b445690a63752baa763ac26339c8742308144"
+fastdsecret="50d86e0c1e9bea9a717fc568f9126764d9165bb7f0c0911f6c21ed901f15e46c"
 setupFastdConfig "$iflabel" "$batif" "$fastdinterfacename" "$fastdport" "$httpport" "$fastdsecret"
 
 # Network interfaces - /etc/network/interfaces.d/bat"$bat"
