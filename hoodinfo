@@ -30,7 +30,7 @@ for hood in $(ls /etc/hoods/*.conf); do
         echo 
         echo ----------------------------------------
         echo 
-        [ $inter ] && { echo -n "Ener for next Hood : "; read x; }
+        [ $inter ] && { echo -n "Enter for next Hood : "; read x; }
     else
         grep ^Hoodname $hood
         echo ---
